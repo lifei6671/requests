@@ -6,7 +6,7 @@ import (
 )
 
 func TestHttpResponse_Bytes(t *testing.T) {
-	resp, err := NewHttpRequest("https://www.baidu.com/s", "GET").
+	resp, err := NewHttpRequest("GET", "https://www.baidu.com/s").
 		WithParam("wd", "golang").
 		WithHeader("Referer", "https://www.baidu.com").
 		WithHeader("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8").
@@ -25,7 +25,7 @@ func TestHttpResponse_Bytes(t *testing.T) {
 }
 
 func TestHttpResponse_SaveFile(t *testing.T) {
-	resp, err := NewHttpRequest("http://f.hiphotos.baidu.com/image/pic/item/f2deb48f8c5494eee5a348a020f5e0fe98257e81.jpg", "GET").
+	resp, err := NewHttpRequest("GET", "http://f.hiphotos.baidu.com/image/pic/item/f2deb48f8c5494eee5a348a020f5e0fe98257e81.jpg").
 		WithHeader("Referer", "https://www.baidu.com").
 		WithHeader("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8").
 		WithHeader("Accept-Language", "zh-CN,zh;q=0.9,en;q=0.8,zh-TW;q=0.7").
@@ -43,7 +43,7 @@ func TestHttpResponse_SaveFile(t *testing.T) {
 }
 
 func TestHttpResponse_ToJson(t *testing.T) {
-	resp, err := NewHttpRequest("https://api.apiopen.top/searchPoetry", "GET").
+	resp, err := NewHttpRequest("GET", "https://api.apiopen.top/searchPoetry").
 		WithParam("name", "古风二首 二").
 		WithReferer("https://www.baidu.com").
 		WithHeader("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8").
@@ -74,7 +74,7 @@ func TestHttpResponse_ToJson(t *testing.T) {
 }
 
 func TestHttpRequest_Error(t *testing.T) {
-	req := NewHttpRequest("://www.baidu.com/s", "GET").
+	req := NewHttpRequest("GET", "https://www.baidu.com/s").
 		WithParam("wd", "golang").
 		WithHeader("Referer", "https://www.baidu.com").
 		WithHeader("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8").
@@ -87,7 +87,7 @@ func TestHttpRequest_Error(t *testing.T) {
 }
 
 func TestHttpRequest_WithFiles(t *testing.T) {
-	req := NewHttpRequest("https://www.baidu.com", "POST").
+	req := NewHttpRequest("POST", "https://www.baidu.com").
 		WithFile("requests.go", "./requests.go")
 
 	if err := req.Error(); err != nil {

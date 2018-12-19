@@ -11,7 +11,7 @@ go get github.com/lifei6671/requests
 ### GET请求
 
 ```go
-resp, err := NewHttpRequest("https://www.baidu.com/s", "GET").
+resp, err := NewHttpRequest("GET", "https://www.baidu.com/s").
 	WithParam("wd", "golang").
 	WithHeader("Referer", "https://www.baidu.com").
 	WithHeader("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8").
@@ -30,7 +30,7 @@ if err != nil {
 
 ```go
 body := []byte("www.baidu.com")
-resp, err := NewHttpRequest("https://www.baidu.com/", "POST").WithBody(body).GetHttpResponse()
+resp, err := NewHttpRequest( "POST", "https://www.baidu.com/").WithBody(body).GetHttpResponse()
 if err != nil {
 	fmt.Println(err)
 } else {

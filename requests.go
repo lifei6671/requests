@@ -21,7 +21,7 @@ import (
 
 var defaultCookieJar http.CookieJar
 var defaultSetting = HttpRequestSetting{
-	UserAgent:        "golang requests 0.1",
+	UserAgent:        "golang-requests-client/1.1",
 	ConnectTimeout:   60 * time.Second,
 	ReadWriteTimeout: 60 * time.Second,
 	Gzip:             true,
@@ -55,9 +55,10 @@ type HttpRequest struct {
 	err     []error
 	logFunc func(v ...interface{})
 	isDebug bool
+	cxt     context.Context
 }
 
-func NewHttpRequest(rawUrl, method string) *HttpRequest {
+func NewHttpRequest(method, rawUrl string) *HttpRequest {
 	var errs []error
 	u, err := url.Parse(rawUrl)
 	if err != nil {
@@ -136,6 +137,9 @@ func (r *HttpRequest) GetHttpResponse() (*HttpResponse, error) {
 					}
 					return conn, err
 				}
+			}
+			if t.MaxIdleConnsPerHost == 0 {
+				t.MaxIdleConnsPerHost = 100
 			}
 		}
 	}
@@ -293,8 +297,13 @@ func (r *HttpRequest) WithTLSConfig(config *tls.Config) *HttpRequest {
 	return r
 }
 
-func (r *HttpRequest) WithTimeout(timeout time.Duration) *HttpRequest {
+func (r *HttpRequest) WithConnectTimeout(timeout time.Duration) *HttpRequest {
 	r.setting.ConnectTimeout = timeout
+	r.setting.ReadWriteTimeout = timeout
+	return r
+}
+
+func (r *HttpRequest) WithReadWriteTimeout(timeout time.Duration) *HttpRequest {
 	r.setting.ReadWriteTimeout = timeout
 	return r
 }
@@ -334,6 +343,11 @@ func (r *HttpRequest) WidthContentType(contentType string) *HttpRequest {
 
 func (r *HttpRequest) WithRedirect(redirect func(req *http.Request, via []*http.Request) error) *HttpRequest {
 	r.setting.CheckRedirect = redirect
+	return r
+}
+
+func (r *HttpRequest) WithContext(ctx context.Context) *HttpRequest {
+	r.req = r.req.WithContext(ctx)
 	return r
 }
 
