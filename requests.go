@@ -43,6 +43,7 @@ type HttpRequestSetting struct {
 	EnableCookie     bool
 	Gzip             bool
 	Retry            int
+	CheckRedirect    func(req *http.Request, via []*http.Request) error
 }
 
 type HttpRequest struct {
@@ -81,7 +82,10 @@ func NewHttpRequest(rawUrl, method string) *HttpRequest {
 	}
 }
 
-func (r *HttpRequest) DoRequest() (*HttpResponse, error) {
+func (r *HttpRequest) GetHttpResponse() (*HttpResponse, error) {
+	if len(r.err) > 0 {
+		return nil, r.Error()
+	}
 	r.buildURLParams()
 	urlParsed, err := url.Parse(r.url)
 	if err != nil {
@@ -149,6 +153,9 @@ func (r *HttpRequest) DoRequest() (*HttpResponse, error) {
 		Jar:       jar,
 	}
 
+	if r.setting.CheckRedirect != nil {
+		client.CheckRedirect = r.setting.CheckRedirect
+	}
 	if r.setting.UserAgent != "" && r.req.Header.Get("User-Agent") == "" {
 		r.req.Header.Set("User-Agent", r.setting.UserAgent)
 	}
@@ -200,6 +207,8 @@ func (r *HttpRequest) WithBody(data interface{}) *HttpRequest {
 		bf := bytes.NewBuffer(t)
 		r.req.Body = ioutil.NopCloser(bf)
 		r.req.ContentLength = int64(len(t))
+	case io.Reader:
+		r.req.Body = ioutil.NopCloser(t)
 	}
 	return r
 }
@@ -323,6 +332,11 @@ func (r *HttpRequest) WidthContentType(contentType string) *HttpRequest {
 	return r
 }
 
+func (r *HttpRequest) WithRedirect(redirect func(req *http.Request, via []*http.Request) error) *HttpRequest {
+	r.setting.CheckRedirect = redirect
+	return r
+}
+
 func (r *HttpRequest) GetRequest() *http.Request {
 	return r.req
 }
@@ -432,9 +446,28 @@ func Get(rawUrl string) (*HttpResponse, error) {
 	if err := req.Error(); err != nil {
 		return nil, err
 	}
-	resp, err := req.DoRequest()
-	if err != nil {
-		return nil, err
-	}
-	return resp, nil
+	resp, err := req.GetHttpResponse()
+	return resp, err
+}
+
+func Post(rawUrl string, body []byte) (*HttpResponse, error) {
+	resp, err := NewHttpRequest(rawUrl, http.MethodPost).WithBody(body).GetHttpResponse()
+	return resp, err
+}
+
+func PostForm(rawUrl string, body url.Values) (*HttpResponse, error) {
+	resp, err := NewHttpRequest(rawUrl, http.MethodPost).
+		WithBody(body.Encode()).
+		WidthContentType("application/x-www-form-urlencoded").
+		GetHttpResponse()
+
+	return resp, err
+}
+
+func Head(rawUrl string) (*HttpResponse, error) {
+	return NewHttpRequest(rawUrl, http.MethodHead).GetHttpResponse()
+}
+
+func Delete(rawUrl string) (*HttpResponse, error) {
+	return NewHttpRequest(rawUrl, http.MethodDelete).GetHttpResponse()
 }

@@ -13,7 +13,7 @@ func TestHttpResponse_Bytes(t *testing.T) {
 		WithHeader("Accept-Language", "zh-CN,zh;q=0.9,en;q=0.8,zh-TW;q=0.7").
 		WithHeader("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.80 Safari/537.36").
 		WithDebug(true).
-		DoRequest()
+		GetHttpResponse()
 
 	if err != nil {
 		t.Fatal(err)
@@ -31,7 +31,7 @@ func TestHttpResponse_SaveFile(t *testing.T) {
 		WithHeader("Accept-Language", "zh-CN,zh;q=0.9,en;q=0.8,zh-TW;q=0.7").
 		WithHeader("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.80 Safari/537.36").
 		WithDebug(true).
-		DoRequest()
+		GetHttpResponse()
 
 	if err != nil {
 		t.Fatal(err)
@@ -50,7 +50,7 @@ func TestHttpResponse_ToJson(t *testing.T) {
 		WithHeader("Accept-Language", "zh-CN,zh;q=0.9,en;q=0.8,zh-TW;q=0.7").
 		WithUserAgent("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.80 Safari/537.36").
 		WithDebug(true).
-		DoRequest()
+		GetHttpResponse()
 
 	if err != nil {
 		t.Fatal(err)
@@ -93,7 +93,7 @@ func TestHttpRequest_WithFiles(t *testing.T) {
 	if err := req.Error(); err != nil {
 		t.Log(err)
 	} else {
-		resp, err := req.DoRequest()
+		resp, err := req.GetHttpResponse()
 
 		if err != nil {
 			t.Log(err)

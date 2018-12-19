@@ -4,7 +4,6 @@ import (
 	"compress/gzip"
 	"encoding/json"
 	"encoding/xml"
-	"gopkg.in/yaml.v2"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -77,12 +76,4 @@ func (r *HttpResponse) ToXml(v interface{}) error {
 		return err
 	}
 	return xml.Unmarshal(data, v)
-}
-
-func (r *HttpResponse) ToYaml(v interface{}) error {
-	data, err := r.Bytes()
-	if err != nil {
-		return err
-	}
-	return yaml.Unmarshal(data, v)
 }
