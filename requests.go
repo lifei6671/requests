@@ -260,7 +260,7 @@ func (r *HttpRequest) WithFiles(files Files) *HttpRequest {
 	for name, p := range files {
 		r.files[name] = p
 	}
-	return r
+	return r.WidthContentType("multipart/form-data")
 }
 
 func (r *HttpRequest) WithProxy(proxy func(*http.Request) (*url.URL, error)) *HttpRequest {
@@ -455,7 +455,7 @@ func (r *HttpRequest) buildURLParams() {
 }
 
 func Get(rawUrl string) (*HttpResponse, error) {
-	req := NewHttpRequest(rawUrl, http.MethodGet)
+	req := NewHttpRequest(http.MethodGet, rawUrl)
 
 	if err := req.Error(); err != nil {
 		return nil, err
@@ -464,13 +464,21 @@ func Get(rawUrl string) (*HttpResponse, error) {
 	return resp, err
 }
 
+func GetAsync(rawUrl string) *Promise {
+	return NewPromise(NewHttpRequest(http.MethodGet, rawUrl))
+}
+
 func Post(rawUrl string, body []byte) (*HttpResponse, error) {
-	resp, err := NewHttpRequest(rawUrl, http.MethodPost).WithBody(body).GetHttpResponse()
+	resp, err := NewHttpRequest(http.MethodPost, rawUrl).WithBody(body).GetHttpResponse()
 	return resp, err
 }
 
+func PostAsync(rawUrl string, body []byte) *Promise {
+	return NewPromise(NewHttpRequest(http.MethodPost, rawUrl).WithBody(body))
+}
+
 func PostForm(rawUrl string, body url.Values) (*HttpResponse, error) {
-	resp, err := NewHttpRequest(rawUrl, http.MethodPost).
+	resp, err := NewHttpRequest(http.MethodPost, rawUrl).
 		WithBody(body.Encode()).
 		WidthContentType("application/x-www-form-urlencoded").
 		GetHttpResponse()
@@ -478,10 +486,47 @@ func PostForm(rawUrl string, body url.Values) (*HttpResponse, error) {
 	return resp, err
 }
 
-func Head(rawUrl string) (*HttpResponse, error) {
-	return NewHttpRequest(rawUrl, http.MethodHead).GetHttpResponse()
+func PostFormAsync(rawUrl string, body url.Values) *Promise {
+	return NewPromise(NewHttpRequest(http.MethodPost, rawUrl).WithBody(body.Encode()).WidthContentType("application/x-www-form-urlencoded"))
 }
 
+func Head(rawUrl string) (*HttpResponse, error) {
+	return NewHttpRequest(http.MethodHead, rawUrl).GetHttpResponse()
+}
+
+func HeadAsync(rawUrl string) *Promise {
+	return NewPromise(NewHttpRequest(http.MethodHead, rawUrl))
+}
 func Delete(rawUrl string) (*HttpResponse, error) {
-	return NewHttpRequest(rawUrl, http.MethodDelete).GetHttpResponse()
+	return NewHttpRequest(http.MethodDelete, rawUrl).GetHttpResponse()
+}
+
+func DeleteAsync(rawUrl string) *Promise {
+	return NewPromise(NewHttpRequest(http.MethodDelete, rawUrl))
+}
+
+func UploadFile(rawUrl string, filename string) (*HttpResponse, error) {
+	f, err := os.Stat(filename)
+	if err != nil {
+		return nil, err
+	}
+	return NewHttpRequest(http.MethodPost, rawUrl).WithFile(f.Name(), filename).GetHttpResponse()
+}
+
+func UploadFileAsync(rawUrl string, filename string) *Promise {
+	f, err := os.Stat(filename)
+	req := NewHttpRequest(http.MethodPost, rawUrl)
+	if err != nil {
+		req.err = append(req.err, err)
+	}
+	req.WithFile(f.Name(), filename)
+	return NewPromise(req)
+}
+
+func UploadFiles(rawUrl string, files Files) (*HttpResponse, error) {
+	return NewHttpRequest(http.MethodPost, rawUrl).WithFiles(files).GetHttpResponse()
+}
+
+func UploadFilesAsync(rawUrl string, files Files) *Promise {
+	return NewPromise(NewHttpRequest(http.MethodPost, rawUrl).WithFiles(files))
 }
